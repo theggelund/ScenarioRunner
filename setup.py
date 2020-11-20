@@ -17,8 +17,8 @@ with open('requirements.txt') as f:
 REQUIREMENTS = [reqLine.replace('\r', '').replace('\n', '') for reqLine in reqLines]
 
 setup(
-    name="sr",
-    version="0.0.1",
+    name="scenario-runner",
+    version="0.0.2",
     author="Thomas Heggelund",
     author_email="thomas.heggelund@gmail.com",
     description="A scenario runner written in python",
