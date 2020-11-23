@@ -5,6 +5,11 @@ import sys
 import yaml
 
 
+class Result:
+    def __init__(self, return_code = 0):
+        self.return_code = return_code
+
+
 def load_configuration(filename: str):
     if not os.path.isfile(filename):
         raise Exception(f"No configuration file '{filename}' found")
@@ -109,7 +114,7 @@ def invoke_shell(args, action_config, scenario_config, global_config):
     parse_args(action_config.get('cmd'), command_line, 'cmd')
     parse_args(action_config.get('args'), command_line, 'args')
 
-    return execute(command_line)
+    return execute(command_line, action_config)
 
 
 def extend_when_not_null(list: list, value):
@@ -128,7 +133,7 @@ def invoke_docker_compose(args, action_config, scenario_config, global_config):
     extend_when_not_null(compose_files, action_config.get('compose_files'))
 
     if len(compose_files) == 0:
-        print(f"'compose_files' must be specified either globally, in scenario or in action")
+        print("'compose_files' must be specified either globally, in scenario or in action")
         raise ValueError()
 
     for file in compose_files:
@@ -142,14 +147,15 @@ def invoke_docker_compose(args, action_config, scenario_config, global_config):
 
 def invoke(args, scenario_config: dict, global_config: dict):
     actions = scenario_config.get('actions')
+
     if actions is None:
         print(f'No actions specified for scenario {args.prog}')
-        return
+        return None
 
-    try:
-        for action_config in actions:
-            action_result = None
+    for action_config in actions:
+        action_result = None
 
+        try:
             if action_config.get('docker-compose') is not None:
                 action_result = invoke_docker_compose(
                     args,
@@ -166,23 +172,25 @@ def invoke(args, scenario_config: dict, global_config: dict):
             else:
                 print(f'Unable to run action for {action_config}')
 
-            if action_result is not None:
-                if action_result != 0:
-                    return action_result
+        except Exception as ex:
+            print(f"Failed running action. Error {ex}")
+            return Result(-1)
 
-    except Exception as ex:
-        print(f"Failed {ex}")
+        if action_result is None:
+            continue
 
 
-def main():
-    config = load_configuration(os.path.join(os.path.curdir, 'sr.yml'))
+        return Result(action_result.returncode)
+
+
+def initiate(configuration: dict):
     parser = argparse.ArgumentParser(prog='sr', description='Run preconfigured scenarios')
 
-    global_config = config.get('global')
+    global_config = configuration.get('global')
     if global_config is None:
         global_config = {}
 
-    scenarios = config.get('scenarios')
+    scenarios = configuration.get('scenarios')
     if scenarios is None:
         raise ValueError('No scenarios specified')
 
@@ -195,11 +203,22 @@ def main():
 
         scenario_parser = subparsers.add_parser(scenario_name, **parser_args)
 
-        scenario_parser.set_defaults(func=lambda cmd_args, s_cfg=scenario_config, g_cfg=global_config: invoke(args, s_cfg, g_cfg))
+        method = lambda cmd_args, s_cfg=scenario_config, g_cfg=global_config: invoke(cmd_args, s_cfg, g_cfg)
+
+        scenario_parser.set_defaults(func=method)
+
+    return parser
+
+
+def main():
+    configuration = load_configuration(os.path.join(os.path.curdir, 'sr.yml'))
+    parser = initiate(configuration)
 
     if len(sys.argv) < 2:
         parser.print_usage()
         sys.exit(1)
 
     args = parser.parse_args()
-    args.func(args)
+    response = args.func(args)
+    sys.exit(response.return_code)
+
