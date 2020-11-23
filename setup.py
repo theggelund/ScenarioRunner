@@ -18,7 +18,7 @@ REQUIREMENTS = [reqLine.replace('\r', '').replace('\n', '') for reqLine in reqLi
 
 setup(
     name="scenario-runner",
-    version="0.0.4",
+    version="0.0.5",
     author="Thomas Heggelund",
     author_email="thomas.heggelund@gmail.com",
     description="A scenario runner written in python",
@@ -31,7 +31,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.5',
+    python_requires='>=3.7',
     entry_points={
         'console_scripts': [
             'sr=sr:main'
