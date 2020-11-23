@@ -134,7 +134,7 @@ def invoke_docker_compose(args, action_config, scenario_config, global_config):
         raise ValueError()
 
     for file in compose_files:
-        command_line.extend(['-f', file])
+        command_line.extend(['-f', os.path.normpath(file)])
 
     parse_args(action_config.get('cmd'), command_line, 'cmd')
     parse_args(action_config.get('args'), command_line, 'args')

@@ -30,12 +30,12 @@ scenarios:
 
 
 def test_when_multiple_actions_correct_action_is_executed(tmp_path: pathlib.Path):
-    cmd = 'files/echo.sh'
-    cmd2 = 'files/echo2.sh'
+    cmd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files', 'echo.sh')
+    cmd2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files', 'echo2.sh')
 
     if platform.system() == 'Windows':
-        cmd = 'files\\echo.bat'
-        cmd2 = 'files\\echo2.bat'
+        cmd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files', 'echo.bat')
+        cmd2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files', 'echo2.bat')
 
     tmp_file = tmp_path / "output"
 
