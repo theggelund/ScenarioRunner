@@ -1,6 +1,6 @@
 # Scenario Runner (sr)
 
-You could use a shell script, it's more advanced or you could just use scenario runner
+You could use a shell script, it's more advanced or you could use scenario runner.
 
 Install with
 ```pip install scenario-runner```
@@ -29,10 +29,13 @@ Then you run the scenario with `sr run_my_tests`
 ## Structure of sr.yml
 
 ```yaml
-scenarios:    # in here goes all the scenarios
+
+key: value
+
+scenarios:    # all the scenarios with name as key
   scenario_name:
     description: 'Describe the scenario. This can be viewed by running sr --help
-    actions:     # in here goes all the actions in the scenario
+    actions:     # all the actions in the scenario as a list
       - action_type:
           ...
 ```
@@ -43,8 +46,8 @@ __docker-compose__
 
 | key | description |
 | :- | :- |
-| compose_files | All compose files used when running docker-compose. Can be specified on action, scenario or globally |
-| cmd | docker-compose [cmd] to run |
+| compose_files | All compose files used when running docker-compose. Can be specified in action, scenario or globally |
+| cmd | docker-compose [cmd] to run. See docker-compose --help for available commands |
 | args | Arguments for docker-compose after cmd. Can be a list of strings or string |
 
 __shell__
