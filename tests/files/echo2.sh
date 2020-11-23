@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo def >> $1
+echo def >> "$1"

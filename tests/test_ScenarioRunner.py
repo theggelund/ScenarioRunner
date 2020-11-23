@@ -34,8 +34,8 @@ def test_when_multiple_actions_correct_action_is_executed(tmp_path: pathlib.Path
     cmd2 = 'files/echo2.sh'
 
     if platform.system() == 'Windows':
-        cmd = 'files\echo.bat'
-        cmd2 = 'files\echo2.bat'
+        cmd = 'files\\echo.bat'
+        cmd2 = 'files\\echo2.bat'
 
     tmp_file = tmp_path / "output"
 
