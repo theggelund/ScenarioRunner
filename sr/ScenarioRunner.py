@@ -229,7 +229,7 @@ def main_with_args(sys_args: list):
     configuration = load_configuration(configuration_path)
     parser = initiate(configuration)
 
-    if len(sys_args) < 2:
+    if len(sys_args) < 1:
         parser.print_usage()
         return -1
 
