@@ -207,8 +207,7 @@ def initiate(configuration: dict):
     return parser
 
 
-def main(sys_args: list):
-
+def main_with_args(sys_args: list):
     if len(sys_args) >= 3 and sys_args[1] == '--file':
         configuration_path = sys_args[2]
 
@@ -229,9 +228,13 @@ def main(sys_args: list):
 
     if len(sys_args) < 2:
         parser.print_usage()
-        sys.exit(1)
+        return -1
 
     args = parser.parse_args(sys_args)
     response = args.func(args)
-    sys.exit(response.return_code)
 
+    return response.return_code
+
+
+def main():
+    return main_with_args(sys.argv)
