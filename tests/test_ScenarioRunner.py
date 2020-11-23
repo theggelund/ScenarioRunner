@@ -28,3 +28,38 @@ scenarios:
 
     assert response.return_code == 0
 
+
+def test_when_multiple_actions_correct_action_is_executed(tmp_path: pathlib.Path):
+    cmd = 'echo.sh'
+    cmd2 = 'echo2.sh'
+
+    if platform.system() == 'Windows':
+        cmd = 'echo.bat'
+        cmd2 = 'echo2.bat'
+
+    tmp_file = tmp_path / "output"
+
+    config = f'''
+scenarios:
+  abc:
+    actions:
+      - shell:
+          cmd: files\{cmd}
+          args: {tmp_file}
+  def:
+    actions:
+      - shell:
+          cmd: files\{cmd2}
+          args: {tmp_file}
+    '''
+
+    config = yaml.load(config, Loader=yaml.FullLoader)
+    parser = ScenarioRunner.initiate(config)
+
+    args = parser.parse_args(['def'])
+    response: ScenarioRunner.Result = args.func(args)
+
+    assert response.return_code == 0
+    assert tmp_file.read_text().rstrip(' \r\n') == "def"
+
+
