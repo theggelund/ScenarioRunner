@@ -18,7 +18,7 @@ REQUIREMENTS = [reqLine.replace('\r', '').replace('\n', '') for reqLine in reqLi
 
 setup(
     name="scenario-runner",
-    version="0.0.5",
+    version="0.0.6",
     author="Thomas Heggelund",
     author_email="thomas.heggelund@gmail.com",
     description="A scenario runner written in python",

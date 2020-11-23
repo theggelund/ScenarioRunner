@@ -11,9 +11,6 @@ class Result:
 
 
 def load_configuration(filename: str):
-    if not os.path.isfile(filename):
-        raise Exception(f"No configuration file '{filename}' found")
-
     with open(filename) as file:
         # The FullLoader parameter handles the conversion from YAML
         # scalar values to Python the dictionary format
@@ -210,15 +207,31 @@ def initiate(configuration: dict):
     return parser
 
 
-def main():
-    configuration = load_configuration(os.path.join(os.path.curdir, 'sr.yml'))
+def main(sys_args: list):
+
+    if len(sys_args) >= 3 and sys_args[1] == '--file':
+        configuration_path = sys_args[2]
+
+        if not os.path.isfile(configuration_path):
+            raise FileExistsError(f"File '{configuration_path}' does not exist")
+
+        os.chdir(os.path.dirname(configuration_path))
+
+        sys_args = sys_args[3:]
+    else:
+        configuration_path = os.path.join(os.getcwd(), 'sr.yml')
+
+        if not os.path.isfile(configuration_path):
+            raise FileExistsError(f"File '{configuration_path}' does not exist")
+
+    configuration = load_configuration(configuration_path)
     parser = initiate(configuration)
 
-    if len(sys.argv) < 2:
+    if len(sys_args) < 2:
         parser.print_usage()
         sys.exit(1)
 
-    args = parser.parse_args()
+    args = parser.parse_args(sys_args)
     response = args.func(args)
     sys.exit(response.return_code)
 
