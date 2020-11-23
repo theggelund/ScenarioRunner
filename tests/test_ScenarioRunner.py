@@ -30,12 +30,12 @@ scenarios:
 
 
 def test_when_multiple_actions_correct_action_is_executed(tmp_path: pathlib.Path):
-    cmd = 'echo.sh'
-    cmd2 = 'echo2.sh'
+    cmd = 'files/echo.sh'
+    cmd2 = 'files/echo2.sh'
 
     if platform.system() == 'Windows':
-        cmd = 'echo.bat'
-        cmd2 = 'echo2.bat'
+        cmd = 'files\echo.bat'
+        cmd2 = 'files\echo2.bat'
 
     tmp_file = tmp_path / "output"
 
@@ -44,12 +44,12 @@ scenarios:
   abc:
     actions:
       - shell:
-          cmd: files\{cmd}
+          cmd: {cmd}
           args: {tmp_file}
   def:
     actions:
       - shell:
-          cmd: files\{cmd2}
+          cmd: {cmd2}
           args: {tmp_file}
     '''
 

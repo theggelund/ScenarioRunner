@@ -207,6 +207,7 @@ def initiate(configuration: dict):
     return parser
 
 
+# expects first argument at sys_args[1] 
 def main_with_args(sys_args: list):
     if len(sys_args) >= 3 and sys_args[1] == '--file':
         configuration_path = sys_args[2]
@@ -218,6 +219,8 @@ def main_with_args(sys_args: list):
 
         sys_args = sys_args[3:]
     else:
+        sys_args = sys_args[1:]
+
         configuration_path = os.path.join(os.getcwd(), 'sr.yml')
 
         if not os.path.isfile(configuration_path):
