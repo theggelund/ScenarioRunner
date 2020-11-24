@@ -176,8 +176,10 @@ def invoke(args, scenario_config: dict, global_config: dict):
         if action_result is None:
             continue
 
+        if action_result.returncode != 0:
+            break
 
-        return Result(action_result.returncode)
+    return Result(action_result.returncode)
 
 
 def initiate(configuration: dict):
