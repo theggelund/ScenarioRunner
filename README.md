@@ -12,6 +12,8 @@ scenarios:
     description: 'Run all my tests'
     actions:
       - docker-compose:
+          env:
+            abc: abc
           compose_files:
             - 'docker/docker-compose.yml'
             - 'docker/test.docker-compose.yml'
@@ -56,3 +58,10 @@ __shell__
 | :- | :- |
 | cmd | cmd to run |
 | args | args for cmd. Can be a list of strings or string |
+
+
+## Action properties
+
+| key | description |
+| :- | :- |
+| env | Dictionary of environment variables to set before running command. Can be set in action, scenario or globally |

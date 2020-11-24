@@ -3,11 +3,20 @@ import os
 import subprocess
 import sys
 import yaml
+import shlex
+import platform
 
 
 class Result:
     def __init__(self, return_code = 0):
         self.return_code = return_code
+
+
+def dict_or_empty(input: dict):
+    if input is None:
+        return {}
+
+    return input
 
 
 def load_configuration(filename: str):
@@ -54,7 +63,7 @@ def merge_dictionaries(a: dict, b: dict):
     return result
 
 
-def execute(command_line, action_config):
+def execute(command_line, action_config, env: dict = None):
     response = None
     capture_output = False
 
@@ -70,7 +79,7 @@ def execute(command_line, action_config):
 
     try:
         print(f'Executing {command_line}')
-        response = subprocess.run(command_line, capture_output=capture_output)
+        response = subprocess.run(command_line, capture_output=capture_output, env=env)
     except KeyboardInterrupt:
         pass
     except Exception as ex:
@@ -92,15 +101,18 @@ def execute(command_line, action_config):
 
 
 def parse_args(input_value, output: list, name: str, required: bool = False):
+    posix = platform.system() != 'Windows'
+
     if input_value is None and required:
         raise Exception(f"Missing '{name}'. Must be either string og list")
     elif input_value is None:
         return
 
     if type(input_value) is str:
-        output.append(input_value)
+        output.extend(shlex.split(input_value, posix=posix))
     elif type(input_value) is list:
-        output.extend(input_value)
+        for input_item in input_value:
+            output.extend(shlex.split(input_item, posix=posix))
     else:
         raise Exception(f"'{name}' supports only string or list")
 
@@ -108,10 +120,20 @@ def parse_args(input_value, output: list, name: str, required: bool = False):
 def invoke_shell(args, action_config, scenario_config, global_config):
     command_line = []
 
+    env = merge_environment_variables(action_config, global_config, scenario_config)
+
     parse_args(action_config.get('cmd'), command_line, 'cmd')
     parse_args(action_config.get('args'), command_line, 'args')
 
-    return execute(command_line, action_config)
+    return execute(command_line, action_config, env)
+
+
+def merge_environment_variables(action_config, global_config, scenario_config):
+    return {
+        **os.environ,
+        **dict_or_empty(global_config.get('env')),
+        **dict_or_empty(scenario_config.get('env')),
+        **dict_or_empty(action_config.get('env'))}
 
 
 def extend_when_not_null(list: list, value):
@@ -121,6 +143,8 @@ def extend_when_not_null(list: list, value):
 
 def invoke_docker_compose(args, action_config, scenario_config, global_config):
     command_line = ['docker-compose']
+
+    env = merge_environment_variables(action_config, global_config, scenario_config)
 
     # combine global, scenario and action compose_files
     compose_files = []
@@ -139,7 +163,7 @@ def invoke_docker_compose(args, action_config, scenario_config, global_config):
     parse_args(action_config.get('cmd'), command_line, 'cmd')
     parse_args(action_config.get('args'), command_line, 'args')
 
-    return execute(command_line, action_config)
+    return execute(command_line, action_config, env)
 
 
 def invoke(args, scenario_config: dict, global_config: dict):

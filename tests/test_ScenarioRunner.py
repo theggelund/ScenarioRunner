@@ -95,3 +95,50 @@ def test_when_multiple_actions_are_specified_all_actions_are_executed(tmp_path: 
     assert response.return_code == 0
     assert tmp_file.read_text().rstrip(' \r\n') == "abc"
     assert tmp_file2.read_text().rstrip(' \r\n') == "def"
+
+
+def test_dict_merge():
+    global_dict = { 'abc': 'abc' }
+    scenario_dict = {'abc': 'not_abc'}
+    action_dict = {'abc', 'act_abc'}
+
+    result = {**global_dict, **scenario_dict, **action_dict}
+
+    assert result.get('abc') == "act_abc"
+
+    global_dict = {'abc': 'abc'}
+    scenario_dict = {'abc': 'not_abc'}
+    action_dict = {'abc2', 'act_abc'}
+
+    result = {**global_dict, **scenario_dict, **action_dict}
+    assert result.get('abc') == "not_abc"
+    assert result.get('abc2') == "act_abc"
+
+
+def test_environment_variable(tmp_path: pathlib.Path):
+    cmd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files', 'envvar.sh')
+
+    if platform.system() == 'Windows':
+        cmd = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'files', 'envvar.bat')
+
+    tmp_file = tmp_path / "output"
+
+    config = f'''
+    scenarios:
+      abc:
+        actions:
+          - shell:
+              env:
+                VARIABLE: abc
+              cmd: {cmd}
+              args: {tmp_file}
+        '''
+
+    config = yaml.load(config, Loader=yaml.FullLoader)
+    parser = ScenarioRunner.initiate(config)
+
+    args = parser.parse_args(['abc'])
+    response: ScenarioRunner.Result = args.func(args)
+
+    assert response.return_code == 0
+    assert tmp_file.read_text().rstrip(' \r\n') == "abc"
