@@ -100,7 +100,9 @@ def execute(command_line, action_config, env: dict = None):
     return response
 
 
-def parse_args(input_value, output: list, name: str, required: bool = False):
+def parse_args(config: dict, output: list, name: str, required: bool = False):
+    input_value = config.get(name)
+
     posix = platform.system() != 'Windows'
 
     if input_value is None and required:
@@ -122,8 +124,8 @@ def invoke_shell(args, action_config, scenario_config, global_config):
 
     env = merge_environment_variables(action_config, global_config, scenario_config)
 
-    parse_args(action_config.get('cmd'), command_line, 'cmd')
-    parse_args(action_config.get('args'), command_line, 'args')
+    parse_args(action_config, command_line, 'cmd', True)
+    parse_args(action_config, command_line, 'args')
 
     return execute(command_line, action_config, env)
 
@@ -136,9 +138,17 @@ def merge_environment_variables(action_config, global_config, scenario_config):
         **dict_or_empty(action_config.get('env'))}
 
 
-def extend_when_not_null(list: list, value):
-    if value is not None:
-        list.extend(value)
+def distinct(a: list = None, b: list = None, c: list = None):
+    if a is None:
+        a = []
+
+    if b is None:
+        b = []
+
+    if c is None:
+        c = []
+
+    return set(a + b + c)
 
 
 def invoke_docker_compose(args, action_config, scenario_config, global_config):
@@ -146,12 +156,10 @@ def invoke_docker_compose(args, action_config, scenario_config, global_config):
 
     env = merge_environment_variables(action_config, global_config, scenario_config)
 
-    # combine global, scenario and action compose_files
-    compose_files = []
-
-    extend_when_not_null(compose_files, global_config.get('compose_files'))
-    extend_when_not_null(compose_files, scenario_config.get('compose_files'))
-    extend_when_not_null(compose_files, action_config.get('compose_files'))
+    compose_files = distinct(
+        global_config.get('compose_files'),
+        scenario_config.get('compose_files'),
+        action_config.get('compose_files'))
 
     if len(compose_files) == 0:
         print("'compose_files' must be specified either globally, in scenario or in action")
@@ -160,8 +168,8 @@ def invoke_docker_compose(args, action_config, scenario_config, global_config):
     for file in compose_files:
         command_line.extend(['-f', os.path.normpath(file)])
 
-    parse_args(action_config.get('cmd'), command_line, 'cmd')
-    parse_args(action_config.get('args'), command_line, 'args')
+    parse_args(action_config, command_line, 'cmd')
+    parse_args(action_config, command_line, 'args')
 
     return execute(command_line, action_config, env)
 

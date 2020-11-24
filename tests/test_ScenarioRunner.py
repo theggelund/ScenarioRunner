@@ -100,7 +100,7 @@ def test_when_multiple_actions_are_specified_all_actions_are_executed(tmp_path: 
 def test_dict_merge():
     global_dict = { 'abc': 'abc' }
     scenario_dict = {'abc': 'not_abc'}
-    action_dict = {'abc', 'act_abc'}
+    action_dict = {'abc': 'act_abc'}
 
     result = {**global_dict, **scenario_dict, **action_dict}
 
@@ -108,7 +108,7 @@ def test_dict_merge():
 
     global_dict = {'abc': 'abc'}
     scenario_dict = {'abc': 'not_abc'}
-    action_dict = {'abc2', 'act_abc'}
+    action_dict = {'abc2': 'act_abc'}
 
     result = {**global_dict, **scenario_dict, **action_dict}
     assert result.get('abc') == "not_abc"
